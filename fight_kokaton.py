@@ -103,7 +103,7 @@ class Beam:
         引数 screen：画面Surface
         """
         self.rct.move_ip(self.vx, self.vy)
-        screen.blit(self.img, self.rct)  
+        screen.blit(self.img, self.rct)
 
 
 class Bomb:
@@ -140,35 +140,9 @@ class Bomb:
         screen.blit(self.img, self.rct)
 
 
-class Beam:
-    """
-    beamに関するクラス
-    """
-    def __init__(self,bird):
-        """
-        こうかとん画像Surfaceを生成する
-        引数1 num：こうかとん画像ファイル名の番号
-        引数2 xy：こうかとん画像の位置座標タプル
-        """
-        self.img =pg.image.load(f"ex03/fig/beam.png")
-        self.rct = self.img.get_rect()
-        self.rct.left = bird.rct.right  #こうかとんの中心横座標
-        self.rct.centery = bird.rct.centery  #こうかとんの中心縦座標
-        self.vx, self.vy = +5, 0
-
-    def update(self, screen: pg.Surface):
-        """
-        ビームを速度vxにしたがって移動させる
-        引数 screen:
-        """
-        self.rct.move_ip(self.vx,self.vy)
-        screen.blit(self.img,self.rct)
-
-
-
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
-    screen = pg.display.set_mode((WIDTH, HEIGHT))    
+    screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_img = pg.image.load("ex03/fig/pg_bg.jpg")
     bird = Bird(3, (900, 400))
     bombs = [Bomb() for _ in range(NUM_OF_BOMBS)]
@@ -181,8 +155,9 @@ def main():
             if event.type == pg.QUIT:
                 return
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
-                #キーが押されたらかつスペースキーを押されたら
+                # キーが押されたら，かつ，キーの種類がスペースキーだったら
                 beam = Beam(bird)
+
         
         screen.blit(bg_img, [0, 0])
         
