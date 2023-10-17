@@ -93,6 +93,7 @@ class Bomb:
         self.rct = self.img.get_rect()
         self.rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
         self.vx, self.vy = +5, +5
+    
 
     def update(self, screen: pg.Surface):
         """
@@ -167,6 +168,10 @@ def main():
                 if beam.rct.colliderect(bomb.rct):
                     beam = None
                     bomb = None
+                    bird.change_img(9, screen)
+                    pg.display.update()
+                    time.sleep(1)
+                    return
 
 
         key_lst = pg.key.get_pressed()
