@@ -170,10 +170,12 @@ class Score:
 
 
 def main():
+    height = 400
+    width = 900
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_img = pg.image.load("ex03/fig/pg_bg.jpg")
-    bird = Bird(3, (900, 400))
+    bird = Bird(3, (width,height ))
     bombs = [Bomb() for _ in range(NUM_OF_BOMBS)]
     beam = None
 
