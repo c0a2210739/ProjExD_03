@@ -40,14 +40,19 @@ class Bird:
         引数1 num：こうかとん画像ファイル名の番号
         引数2 xy：こうかとん画像の位置座標タプル
         """
-        self.img = pg.transform.flip(  # 左右反転
-            pg.transform.rotozoom(  # 2倍に拡大
-                pg.image.load(f"ex03/fig/{num}.png"), 
-                0, 
-                2.0), 
-            True, 
-            False
-        )
+        img0 = pg.transform.rotozoom(pg.image.load(f"ex03/fig/{num}.png"), 0, 2.0)
+        img = pg.transform.flip(img0, True, False)  # デフォルトのこうかとん（右向き）
+        self.imgs = {  # 0度から反時計回りに定義
+            (+5, 0): img,  # 右
+            (+5, -5): pg.transform.rotozoom(img, 45, 1.0),  # 右上
+            (0, -5): pg.transform.rotozoom(img, 90, 1.0),  # 上
+            (-5, -5): pg.transform.rotozoom(img0, -45, 1.0),  # 左上
+            (-5, 0): img0,  # 左
+            (-5, +5): pg.transform.rotozoom(img0, 45, 1.0),  # 左下
+            (0, +5): pg.transform.rotozoom(img, -90, 1.0),  # 下
+            (+5, +5): pg.transform.rotozoom(img, -45, 1.0),  # 右下
+        }
+        self.img = self.imgs[(+5, 0)]
         self.rct = self.img.get_rect()
         self.rct.center = xy
 
@@ -74,7 +79,30 @@ class Bird:
         self.rct.move_ip(sum_mv)
         if check_bound(self.rct) != (True, True):
             self.rct.move_ip(-sum_mv[0], -sum_mv[1])
+        if not (sum_mv[0] == 0 and sum_mv[1] == 0):
+            self.img = self.imgs[tuple(sum_mv)]
         screen.blit(self.img, self.rct)
+
+
+class Beam:
+    def __init__(self, bird: Bird):
+        """
+        ビーム画像Surfaceを生成する
+        引数 bird：こうかとんインスタンス（Birdクラスのインスタンス）
+        """
+        self.img = pg.image.load(f"ex03/fig/beam.png")
+        self.rct = self.img.get_rect()
+        self.rct.left = bird.rct.right  # こうかとんの右横座標
+        self.rct.centery = bird.rct.centery  # こうかとんの中心縦座標
+        self.vx, self.vy = +5, 0
+
+    def update(self, screen: pg.Surface):
+        """
+        ビームを速度vxにしたがって移動させる
+        引数 screen：画面Surface
+        """
+        self.rct.move_ip(self.vx, self.vy)
+        screen.blit(self.img, self.rct)        
 
 
 class Bomb:
@@ -93,7 +121,6 @@ class Bomb:
         self.rct = self.img.get_rect()
         self.rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
         self.vx, self.vy = +5, +5
-    
 
     def update(self, screen: pg.Surface):
         """
@@ -109,38 +136,12 @@ class Bomb:
         screen.blit(self.img, self.rct)
 
 
-class Beam:
-    """
-    beamに関するクラス
-    """
-    def __init__(self,bird):
-        """
-        こうかとん画像Surfaceを生成する
-        引数1 num：こうかとん画像ファイル名の番号
-        引数2 xy：こうかとん画像の位置座標タプル
-        """
-        self.img =pg.image.load(f"ex03/fig/beam.png")
-        self.rct = self.img.get_rect()
-        self.rct.left = bird.rct.right  #こうかとんの中心横座標
-        self.rct.centery = bird.rct.centery  #こうかとんの中心縦座標
-        self.vx, self.vy = +5, 0
-
-    def update(self, screen: pg.Surface):
-        """
-        ビームを速度vxにしたがって移動させる
-        引数 screen:
-        """
-        self.rct.move_ip(self.vx,self.vy)
-        screen.blit(self.img,self.rct)
-
-
-
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
     bg_img = pg.image.load("ex03/fig/pg_bg.jpg")
     bird = Bird(3, (900, 400))
-    bomb = Bomb((255, 0, 0), 10)  
+    bomb = Bomb((255, 0, 0), 10)
     beam = None
 
     clock = pg.time.Clock()
@@ -150,8 +151,9 @@ def main():
             if event.type == pg.QUIT:
                 return
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
-                #キーが押されたらかつスペースキーを押されたら
+                # キーが押されたら，かつ，キーの種類がスペースキーだったら
                 beam = Beam(bird)
+
         
         screen.blit(bg_img, [0, 0])
         
@@ -162,17 +164,15 @@ def main():
                 pg.display.update()
                 time.sleep(1)
                 return
-        
         if beam is not None:
             if bomb is not None:
-                if beam.rct.colliderect(bomb.rct):
+                if beam.rct.colliderect(bomb.rct):  # ビームと爆弾の衝突判定
+                    # 撃墜＝Noneにする
                     beam = None
                     bomb = None
-                    bird.change_img(9, screen)
+                    bird.change_img(6, screen)
                     pg.display.update()
-                    time.sleep(1)
-                    return
-
+                    time.sleep(1)                    
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
